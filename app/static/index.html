@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Firewatch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="/static/styles.css?v=20261011-1">
+</head>
+<body>
+  <div class="color-cloud color-cloud-blue"></div>
+  <div class="color-cloud color-cloud-green"></div>
+  <div class="color-cloud color-cloud-yellow"></div>
+  <main class="app-shell">
+    <header class="masthead">
+      <div class="brand-lockup">
+        <div class="brand-mark" aria-hidden="true">
+          <span class="brand-segment brand-blue"></span>
+          <span class="brand-segment brand-red"></span>
+          <span class="brand-segment brand-yellow"></span>
+          <span class="brand-segment brand-green"></span>
+        </div>
+        <div>
+          <p class="brand-name">Firewatch</p>
+          <p class="brand-subtitle">Wildfire monitoring for the places you care about</p>
+        </div>
+      </div>
+      <div class="masthead-actions">
+        <button id="advanced-toggle" class="ghost-button" type="button" aria-pressed="false">Advanced view: Off</button>
+        <a href="/docs" class="link-button advanced-only">Open API docs</a>
+        <button id="clear-storage" class="ghost-button" type="button">Clear local watches</button>
+      </div>
+    </header>
+
+    <section class="hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">Simple, clear wildfire monitoring</p>
+        <h1>Keep an eye on any address, landmark, city, or ZIP code.</h1>
+        <p class="lede">
+          Type a place the way you normally would. Firewatch checks it before saving, keeps the full address in this browser, and stores only the coordinates and watch details needed for fire monitoring.
+        </p>
+        <div class="hero-pills">
+          <span class="hero-pill">Type places naturally</span>
+          <span class="hero-pill">Private by default</span>
+          <span class="hero-pill">Live watch updates</span>
+        </div>
+      </div>
+
+      <aside class="hero-panel">
+        <article class="hero-card hero-card-feature">
+          <p class="panel-label">Why it feels easy</p>
+          <h2>One field, a quick check, and a watchlist you can trust.</h2>
+          <p>
+            Paste a full address, a landmark, a city and state, or a ZIP code. Firewatch makes sure it understands the place before it saves anything, so the watchlist feels solid instead of guessy.
+          </p>
+        </article>
+        <div class="hero-metrics">
+          <article class="metric-card">
+            <span class="metric-label">Saved watches</span>
+            <strong id="watch-count">0</strong>
+            <span class="metric-copy">places saved in this browser</span>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Watch status</span>
+            <strong id="watch-status-label">Ready</strong>
+            <span class="metric-copy">based on your latest fire alerts</span>
+          </article>
+        </div>
+      </aside>
+    </section>
+
+    <section class="dashboard-grid">
+      <section class="panel form-panel">
+        <div class="section-head">
+          <div>
+            <p class="panel-label">Add watch location</p>
+            <h2>Start with the place. We will take it from there.</h2>
+          </div>
+          <p class="section-copy">Leave the name blank and Firewatch will fill in something sensible for you.</p>
+        </div>
+
+        <form id="watch-form" class="watch-form">
+          <label class="field-primary">
+            <span>Address or ZIP code</span>
+            <div class="search-field">
+              <span class="search-icon" aria-hidden="true">⌕</span>
+              <input id="address" name="address" type="text" maxlength="500" required placeholder="Street address, city and state, or ZIP code">
+            </div>
+            <small class="field-note">Street address, city and state, landmark, or 5-digit ZIP code.</small>
+          </label>
+
+          <div class="form-actions">
+            <button id="save-watch" class="primary-button" type="submit">Add watch</button>
+            <p class="form-helper">We will check the place before it lands in your watchlist.</p>
+          </div>
+
+          <div id="address-preview" class="resolve-preview" aria-live="polite"></div>
+
+          <label class="field-secondary">
+            <span>Name</span>
+            <input id="display-name" name="display_name" type="text" maxlength="200" placeholder="Home, office, trailhead, school">
+          </label>
+
+          <label class="field-icon">
+            <span>Icon</span>
+            <input id="icon" name="icon" type="text" maxlength="10" value="📍" placeholder="📍">
+          </label>
+        </form>
+
+        <div class="info-strip">
+          <article class="info-card">
+            <p class="info-title">Address stays here</p>
+            <p>The full address stays in <strong>localStorage</strong> in this browser.</p>
+          </article>
+          <article class="info-card">
+            <p class="info-title">Server stores less</p>
+            <p>The backend keeps coordinates, labels, and fire telemetry unless you explicitly choose raw-address storage through the API.</p>
+          </article>
+          <article class="info-card">
+            <p class="info-title">Flexible input</p>
+            <p>Loose formatting, landmarks, and ZIP-only entries all work.</p>
+          </article>
+        </div>
+
+        <p id="status" class="status" aria-live="polite"></p>
+      </section>
+
+      <section class="panel watch-panel">
+        <div class="section-head watch-head">
+          <div>
+            <p class="panel-label">Watched places</p>
+            <h2>Places you are watching</h2>
+          </div>
+          <p class="section-copy">Each card updates with the latest fire and smoke assessment for that place.</p>
+        </div>
+
+        <div class="watch-summary">
+          <span class="summary-chip">Stays on this browser</span>
+          <span class="summary-chip">Live fire and smoke assessments</span>
+          <span class="summary-chip">Clear guidance at a glance</span>
+        </div>
+
+        <div class="watch-runtime-strip" aria-live="polite">
+          <p id="refresh-countdown" class="refresh-countdown">Auto-refresh paused until a watch is added.</p>
+          <button id="refresh-now" class="ghost-button" type="button">Refresh now</button>
+        </div>
+
+        <div id="watch-list" class="watch-list"></div>
+      </section>
+    </section>
+
+    <section id="diagnostics-panel" class="panel diagnostics-panel advanced-only">
+      <div class="section-head diagnostics-head">
+        <div>
+          <p class="panel-label">Dependency diagnostics</p>
+          <h2>Upstream service health</h2>
+        </div>
+        <p class="section-copy">Live status for D1, EONET, FIRMS, and AQI dependencies used by prediction and intelligence features.</p>
+      </div>
+
+      <p id="diagnostics-summary" class="diagnostics-summary">Waiting for diagnostics...</p>
+      <div id="diagnostics-grid" class="diagnostics-grid" role="status" aria-live="polite"></div>
+      <section class="diagnostics-raw" aria-label="Developer raw diagnostics">
+        <div class="diagnostics-raw-head">
+          <p class="panel-label">Developer diagnostics</p>
+          <p id="diagnostics-raw-meta" class="diagnostics-raw-meta">Waiting for payloads...</p>
+        </div>
+        <pre id="diagnostics-raw" class="diagnostics-raw-block" role="status" aria-live="polite">{}</pre>
+      </section>
+    </section>
+
+    <section class="panel map-panel">
+      <div class="section-head map-head">
+        <div>
+          <p class="panel-label">Live map view</p>
+          <h2>See watches, active fire origins, and spread forecasts</h2>
+        </div>
+        <p class="section-copy">The map visualizes active fire points, probability-weighted spread corridors, and projected distance checkpoints so risk movement and confidence are clear at a glance.</p>
+      </div>
+
+      <div class="map-layout">
+        <div id="watch-map" class="watch-map" role="img" aria-label="Map of watched places"></div>
+        <aside class="map-legend" aria-label="Map legend">
+          <p class="map-legend-title">Decision state legend</p>
+          <ul class="map-legend-list">
+            <li class="map-legend-item">
+              <span class="legend-symbol point syncing" aria-hidden="true"></span>
+              <span class="map-legend-copy"><strong>Syncing data</strong><span>Telemetry is still loading for this watch.</span></span>
+            </li>
+            <li class="map-legend-item">
+              <span class="legend-symbol point safe" aria-hidden="true"></span>
+              <span class="map-legend-copy"><strong>Safe</strong><span>No nearby fire impact signal is elevated right now.</span></span>
+            </li>
+            <li class="map-legend-item">
+              <span class="legend-symbol point watch-closely" aria-hidden="true"></span>
+              <span class="map-legend-copy"><strong>Watch Closely</strong><span>Low corridor intensity and lower projected threat.</span></span>
+            </li>
+            <li class="map-legend-item">
+              <span class="legend-symbol point prepare" aria-hidden="true"></span>
+              <span class="map-legend-copy"><strong>Prepare</strong><span>Medium corridor intensity with a stronger near-term signal.</span></span>
+            </li>
+            <li class="map-legend-item">
+              <span class="legend-symbol point danger-now" aria-hidden="true"></span>
+              <span class="map-legend-copy"><strong>Danger Now</strong><span>Highest urgency watch state.</span></span>
+            </li>
+            <li class="map-legend-item">
+              <span class="legend-symbol fire-origin" aria-hidden="true"></span>
+              <span class="map-legend-copy"><strong>Fire origin</strong><span>Animated hotspot marker with source ID, confidence, and FRP in the popup.</span></span>
+            </li>
+            <li class="map-legend-item">
+              <span class="legend-symbol corridor high" aria-hidden="true"></span>
+              <span class="map-legend-copy"><strong>High corridor intensity</strong><span>24h impact probability above 75%.</span></span>
+            </li>
+            <li class="map-legend-item">
+              <span class="legend-symbol corridor medium" aria-hidden="true"></span>
+              <span class="map-legend-copy"><strong>Medium corridor intensity</strong><span>24h impact probability between 55% and 74%.</span></span>
+            </li>
+            <li class="map-legend-item">
+              <span class="legend-symbol corridor low" aria-hidden="true"></span>
+              <span class="map-legend-copy"><strong>Low corridor intensity</strong><span>24h impact probability below 55%.</span></span>
+            </li>
+            <li class="map-legend-item">
+              <span class="legend-symbol forecast high" aria-hidden="true"></span>
+              <span class="map-legend-copy"><strong>Forecast checkpoints</strong><span>Larger nodes mean higher projected threat along the corridor.</span></span>
+            </li>
+          </ul>
+          <p id="map-summary" class="map-summary">Add watches to populate the map.</p>
+        </aside>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer">
+    <a href="https://github.com/cameronaaron/firewatch">Source code</a> · AGPL-3.0-or-later
+  </footer>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
+  <script src="/static/app.js?v=20261011-1" defer></script>
+</body>
+</html>

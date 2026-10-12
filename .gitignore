@@ -1,0 +1,99 @@
+# OS and editor state
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Python runtime and packaging
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.python-version
+.venv/
+venv/
+env/
+ENV/
+build/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Test, lint, and type-check caches
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache/
+.ruff_cache/
+.mypy_cache/
+.pyre/
+.hypothesis/
+.dmypy.json
+dmypy.json
+coverage.xml
+htmlcov/
+nosetests.xml
+pytestdebug.log
+*.cover
+
+# Local environment files
+.env
+.env.local
+.env.*.local
+.envrc
+.dev.vars
+
+# Local databases and sqlite sidecars
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite3
+firewatch.db
+
+# Logs and temp files
+*.log
+logs/
+tmp/
+temp/
+*.pid
+
+# ML and benchmark outputs
+artifacts/
+catboost_info/
+*.joblib
+
+# Cloudflare / Wrangler local state
+.wrangler/
+
+# Frontend and notebook tooling
+node_modules/
+.parcel-cache/
+.ipynb_checkpoints/
+
+# Generated docs / local overrides
+docs/_build/
+site/
+docker-compose.override.yml
+
+# Project-specific scratch data
+data/

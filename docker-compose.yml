@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # FastAPI application
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: firewatch-api
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - DATABASE_URL=sqlite:///./firewatch.db
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./app:/app/app
+      - ./firewatch.db:/app/firewatch.db
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: PostgreSQL database (uncomment for production)
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: firewatch-postgres
+  #   environment:
+  #     - POSTGRES_USER=firewatch
+  #     - POSTGRES_PASSWORD=firewatch
+  #     - POSTGRES_DB=firewatch
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+
+# volumes:
+#   postgres_data:

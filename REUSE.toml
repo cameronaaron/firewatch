@@ -1,0 +1,22 @@
+version = 1
+
+[[annotations]]
+path = ["**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Cameron Aaron"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+# UCI Machine Learning Repository excerpts, CC BY 4.0.
+# Forest Fires: https://doi.org/10.24432/C5D88D
+[[annotations]]
+path = "tests/fixtures/uci_forest_fires_sample.csv"
+precedence = "override"
+SPDX-FileCopyrightText = "2008 Paulo Cortez and Aníbal Morais"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+# Algerian Forest Fires: https://doi.org/10.24432/C5KW4N
+[[annotations]]
+path = "tests/fixtures/uci_algerian_forest_fires_sample.csv"
+precedence = "override"
+SPDX-FileCopyrightText = "2019 Faroudja Abid"
+SPDX-License-Identifier = "CC-BY-4.0"

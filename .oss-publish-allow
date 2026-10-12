@@ -1,0 +1,7 @@
+tests/test_algorithm_math.py  # placeholder street addresses in geocoding fixtures
+tests/test_api.py  # placeholder street addresses in geocoding fixtures
+tests/test_api_coverage.py  # placeholder street addresses in geocoding fixtures
+tests/test_benchmark_cli.py  # placeholder street addresses in geocoding fixtures
+tests/test_core_services_coverage.py  # placeholder and public-place addresses in geocoding fixtures
+tests/test_data_model_integrity.py  # placeholder street addresses in geocoding fixtures
+tests/test_residual_coverage.py  # placeholder street addresses in geocoding fixtures

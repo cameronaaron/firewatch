@@ -1,0 +1,18 @@
+name = "firewatch"
+compatibility_date = "2026-05-21"
+pages_build_output_dir = "app/static"
+
+[vars]
+MAX_FIRE_DISTANCE_MILES = "300"
+FIRMS_RADIUS_MILES = "75"
+FIRMS_DAY_RANGE = "1"
+FIRMS_MIN_CONFIDENCE = "60"
+FIRMS_MIN_FRP = "6"
+FIRMS_VEGETATION_ONLY = "true"
+FIRMS_SOURCE_IDS = "VIIRS_NOAA21_NRT,VIIRS_NOAA20_NRT,VIIRS_SNPP_NRT,MODIS_NRT"
+
+[[d1_databases]]
+binding = "FIREWATCH_DB"
+database_name = "firewatch-edge"
+# From `wrangler d1 create firewatch-edge`.
+database_id = "<your-d1-database-id>"
