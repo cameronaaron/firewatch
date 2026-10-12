@@ -26,7 +26,7 @@ class AirQualityService:
 
     def get_air_quality_assessment(
         self, latitude: float, longitude: float
-    ) -> dict[str, object] | None:
+    ) -> dict[str, Any] | None:
         """Return merged air-quality conditions for a location when available."""
         try:
             with httpx.Client(timeout=self.timeout) as client:
@@ -82,7 +82,7 @@ class AirQualityService:
         client: httpx.Client,
         latitude: float,
         longitude: float,
-    ) -> dict[str, object] | None:
+    ) -> dict[str, Any] | None:
         response = client.get(
             self.base_url,
             params={
@@ -118,7 +118,7 @@ class AirQualityService:
         client: httpx.Client,
         latitude: float,
         longitude: float,
-    ) -> dict[str, object] | None:
+    ) -> dict[str, Any] | None:
         if not self.airnow_api_key:
             return None
 
@@ -188,7 +188,7 @@ class AirQualityService:
         return numerator / denominator
 
     @staticmethod
-    def _source_weight(source: dict[str, object]) -> float:
+    def _source_weight(source: dict[str, Any]) -> float:
         base = AirQualityService._to_float(source.get("source_confidence")) or 0.5
         observed_at = source.get("air_quality_observed_at")
         if not isinstance(observed_at, datetime):

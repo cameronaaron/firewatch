@@ -531,7 +531,7 @@ class SatelliteFireService:
                     if scale != 1.0 or offset != 0.0:
                         data = (data * scale) + offset
 
-                    return data
+                    return np.ma.asarray(data)
         except Exception as exc:
             logger.warning("Raster read failed for %s: %s", href, exc)
             return None

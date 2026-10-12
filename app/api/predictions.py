@@ -21,20 +21,10 @@ ml_service = MLFireAnalysisService()
 
 def _distance_between_fire_and_location(fire: Fire, location: Location) -> float:
     """Calculate fire-to-location distance in miles."""
-    if (
-        getattr(fire, "latitude", None) is None
-        or getattr(fire, "longitude", None) is None
-        or getattr(location, "latitude", None) is None
-        or getattr(location, "longitude", None) is None
-    ):
+    coords = location.coordinates
+    if coords is None:
         return 0.0
-
-    return FireDataService.haversine_distance(
-        fire.latitude,
-        fire.longitude,
-        location.latitude,
-        location.longitude,
-    )
+    return FireDataService.haversine_distance(fire.latitude, fire.longitude, *coords)
 
 
 @router.get("/data-sources")

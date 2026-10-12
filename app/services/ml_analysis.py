@@ -323,20 +323,10 @@ class MLFireAnalysisService:
     @staticmethod
     def _calculate_distance_miles(fire: Fire, location: Location) -> float:
         """Calculate current fire-to-location distance when coordinates are available."""
-        if (
-            getattr(fire, "latitude", None) is None
-            or getattr(fire, "longitude", None) is None
-            or getattr(location, "latitude", None) is None
-            or getattr(location, "longitude", None) is None
-        ):
+        coords = location.coordinates
+        if coords is None:
             return 0.0
-
-        return FireDataService.haversine_distance(
-            fire.latitude,
-            fire.longitude,
-            location.latitude,
-            location.longitude,
-        )
+        return FireDataService.haversine_distance(fire.latitude, fire.longitude, *coords)
 
     @staticmethod
     def _build_effective_fire(
@@ -382,19 +372,11 @@ class MLFireAnalysisService:
         location: Location,
     ) -> dict[str, object]:
         """Collect backend external intelligence around the incident and watch location."""
-        if (
-            getattr(fire, "latitude", None) is None
-            or getattr(fire, "longitude", None) is None
-            or getattr(location, "latitude", None) is None
-            or getattr(location, "longitude", None) is None
-        ):
+        coords = location.coordinates
+        if coords is None:
             return {}
-
         return await self.external_intelligence_service.collect_for_fire_and_location(
-            float(fire.latitude),
-            float(fire.longitude),
-            float(location.latitude),
-            float(location.longitude),
+            fire.latitude, fire.longitude, *coords
         )
 
     async def analyze_fire_threat(
@@ -421,17 +403,21 @@ class MLFireAnalysisService:
             distance_miles: Distance from location to fire
             db: Database session
         """
+        coords = location.coordinates
+        if coords is None:
+            raise ValueError(f"location {location.location_id} is not geocoded")
+        latitude, longitude = coords
         self._ensure_historical_spread_model(db)
         history = distance_history(db, fire, location)
 
         weather, fwi_data, external_intelligence = await asyncio.gather(
             self.weather_service.get_current_weather(
-                location.latitude,
-                location.longitude,
+                latitude,
+                longitude,
             ),
             self.weather_service.get_fire_weather_indices(
-                location.latitude,
-                location.longitude,
+                latitude,
+                longitude,
             ),
             self._collect_external_intelligence(fire, location),
         )
@@ -615,10 +601,11 @@ class MLFireAnalysisService:
             location: Location to forecast
             forecast_hours: Hours into future to predict
         """
-        # Get forecast weather
+        coords = location.coordinates
+        if coords is None:
+            raise ValueError(f"location {location.location_id} is not geocoded")
         forecast = await self.weather_service.get_forecast(
-            location.latitude,
-            location.longitude,
+            *coords,
             days=(forecast_hours // 24) + 1,
         )
 

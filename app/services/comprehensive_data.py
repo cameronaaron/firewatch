@@ -602,10 +602,11 @@ class ComprehensiveDataService:
             if firms:
                 result["fire_detection_count"] = len(firms)
                 radiative_power = [
-                    self._to_float(getattr(detection, "radiative_power", None))
+                    value
                     for detection in firms
+                    if (value := self._to_float(getattr(detection, "radiative_power", None)))
+                    is not None
                 ]
-                radiative_power = [value for value in radiative_power if value is not None]
                 if radiative_power:
                     result["mean_radiative_power_mw"] = float(np.mean(radiative_power))
 

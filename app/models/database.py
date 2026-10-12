@@ -18,7 +18,8 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
-    pass
+    """Columns with a default are typed non-null: the app always fills them.
+    Their DDL keeps nullable=True so existing databases need no migration."""
 
 
 def utc_now() -> datetime:
@@ -47,13 +48,15 @@ class Location(Base):
     location_id: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
     address: Mapped[str] = mapped_column(String(500), nullable=False)
     display_name: Mapped[str] = mapped_column(String(200), nullable=False)
-    icon: Mapped[str | None] = mapped_column(String(10), default="📍")
+    icon: Mapped[str] = mapped_column(String(10), default="📍", nullable=True)
     latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
     longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
     geocoded_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
-    is_active: Mapped[bool | None] = mapped_column(Boolean, default=True)
-    created_at: Mapped[datetime | None] = mapped_column(DateTime, default=utc_now)
-    updated_at: Mapped[datetime | None] = mapped_column(DateTime, default=utc_now, onupdate=utc_now)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=utc_now, onupdate=utc_now, nullable=True
+    )
 
     history: Mapped[list["DistanceHistory"]] = relationship(
         "DistanceHistory", back_populates="location", cascade="all, delete-orphan"
@@ -61,6 +64,13 @@ class Location(Base):
     alerts: Mapped[list["Alert"]] = relationship(
         "Alert", back_populates="location", cascade="all, delete-orphan"
     )
+
+    @property
+    def coordinates(self) -> tuple[float, float] | None:
+        """(latitude, longitude), or None until the address is geocoded."""
+        if self.latitude is None or self.longitude is None:
+            return None
+        return self.latitude, self.longitude
 
     def __repr__(self) -> str:
         return f"<Location {self.location_id} ({self.display_name})>"
@@ -91,13 +101,13 @@ class Fire(Base):
     longitude: Mapped[float] = mapped_column(Float, nullable=False)
     acres_burned: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     percent_contained: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
-    last_updated: Mapped[datetime | None] = mapped_column(
-        DateTime, default=utc_now, onupdate=utc_now
+    last_updated: Mapped[datetime] = mapped_column(
+        DateTime, default=utc_now, onupdate=utc_now, nullable=True
     )
-    discovered_at: Mapped[datetime | None] = mapped_column(DateTime, default=utc_now)
+    discovered_at: Mapped[datetime] = mapped_column(DateTime, default=utc_now, nullable=True)
     polygon_data: Mapped[dict | None] = mapped_column(JSON, default=None)
-    extra_metadata: Mapped[dict | None] = mapped_column(JSON, default=dict)
-    is_active: Mapped[bool | None] = mapped_column(Boolean, default=True)
+    extra_metadata: Mapped[dict] = mapped_column(JSON, default=dict, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=True)
     bearing_degrees = None
 
     distances: Mapped[list["DistanceHistory"]] = relationship(
@@ -132,8 +142,10 @@ class DistanceHistory(Base):
     distance_miles: Mapped[float] = mapped_column(Float, nullable=False)
     bearing_degrees: Mapped[float | None] = mapped_column(Float, nullable=True)
     direction: Mapped[str | None] = mapped_column(String(50), nullable=True)  # e.g., "NE"
-    timestamp: Mapped[datetime | None] = mapped_column(DateTime, default=utc_now, index=True)
-    moving_towards: Mapped[bool | None] = mapped_column(Boolean, default=False)
+    timestamp: Mapped[datetime] = mapped_column(
+        DateTime, default=utc_now, index=True, nullable=True
+    )
+    moving_towards: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     speed_mph: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     observed_acres_burned: Mapped[float | None] = mapped_column(Float, nullable=True)
     observed_percent_contained: Mapped[float | None] = mapped_column(Float, nullable=True)
@@ -171,8 +183,10 @@ class Alert(Base):
     alert_level: Mapped[str] = mapped_column(String(20), nullable=False)
     distance_miles: Mapped[float] = mapped_column(Float, nullable=False)
     reason: Mapped[str] = mapped_column(String(500), nullable=False)
-    timestamp: Mapped[datetime | None] = mapped_column(DateTime, default=utc_now, index=True)
-    acknowledged: Mapped[bool | None] = mapped_column(Boolean, default=False)
+    timestamp: Mapped[datetime] = mapped_column(
+        DateTime, default=utc_now, index=True, nullable=True
+    )
+    acknowledged: Mapped[bool] = mapped_column(Boolean, default=False, nullable=True)
     acknowledged_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
 
     fire: Mapped["Fire"] = relationship("Fire", back_populates="alerts")
@@ -207,7 +221,9 @@ class WeatherCache(Base):
     wind_direction: Mapped[float | None] = mapped_column(Float, nullable=True)
     humidity: Mapped[float | None] = mapped_column(Float, nullable=True)
     conditions: Mapped[str | None] = mapped_column(String(200), nullable=True)
-    timestamp: Mapped[datetime | None] = mapped_column(DateTime, default=utc_now, index=True)
+    timestamp: Mapped[datetime] = mapped_column(
+        DateTime, default=utc_now, index=True, nullable=True
+    )
     expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 
     def __repr__(self) -> str:

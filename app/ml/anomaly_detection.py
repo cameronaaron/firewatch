@@ -59,16 +59,16 @@ class AnomalyDetector:
 
         rows = [
             {
-                "timestamp": getattr(h, "recorded_at", h.timestamp),
+                "timestamp": h.timestamp,
                 "distance": h.distance_miles,
                 "bearing": h.bearing_degrees,
             }
             for h in sorted(
                 history,
-                key=lambda item: getattr(item, "recorded_at", item.timestamp),
+                key=lambda item: item.timestamp,
             )
         ]
-        timestamps = [row["timestamp"] for row in rows]
+        timestamps = [h.timestamp for h in sorted(history, key=lambda item: item.timestamp)]
         hours_elapsed = np.array(
             [(timestamp - timestamps[0]).total_seconds() / 3600 for timestamp in timestamps],
             dtype=float,

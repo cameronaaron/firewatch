@@ -263,25 +263,23 @@ def seed_synthetic_history(
         }
 
     rng = Random(random_seed)
-    candidate_pairs: list[tuple[Fire, Location, float]] = []
+    candidate_pairs: list[tuple[Fire, Location, tuple[float, float], float]] = []
     for fire in fires:
         for location in locations:
-            distance = FireDataService.haversine_distance(
-                fire.latitude,
-                fire.longitude,
-                location.latitude,
-                location.longitude,
-            )
-            candidate_pairs.append((fire, location, distance))
+            coords = location.coordinates
+            if coords is None:
+                continue
+            distance = FireDataService.haversine_distance(fire.latitude, fire.longitude, *coords)
+            candidate_pairs.append((fire, location, coords, distance))
 
-    candidate_pairs.sort(key=lambda pair: pair[2])
+    candidate_pairs.sort(key=lambda pair: pair[3])
     selected_pairs = candidate_pairs[:pair_limit]
 
     history_rows_added = 0
     now = datetime.now(UTC)
     step_hours = step_minutes / 60.0
 
-    for pair_index, (fire, location, baseline_distance) in enumerate(selected_pairs):
+    for pair_index, (fire, location, coords, baseline_distance) in enumerate(selected_pairs):
         start_distance = max(0.5, baseline_distance + rng.uniform(3.0, 15.0))
         drift_mph = rng.uniform(0.2, 1.8)
         wave_amplitude = rng.uniform(0.1, 0.9)
@@ -302,12 +300,7 @@ def seed_synthetic_history(
             distance_miles = max(0.1, trend_distance + wave_offset + noise_offset)
 
             timestamp = series_start + timedelta(minutes=point_index * step_minutes)
-            bearing = FireDataService.calculate_bearing(
-                fire.latitude,
-                fire.longitude,
-                location.latitude,
-                location.longitude,
-            )
+            bearing = FireDataService.calculate_bearing(fire.latitude, fire.longitude, *coords)
             direction = FireDataService.get_cardinal_direction(bearing)
 
             moving_towards = False
