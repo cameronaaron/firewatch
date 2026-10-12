@@ -30,12 +30,8 @@ class ExternalIntelligenceService:
     ) -> list[dict[str, Any]]:
         """Convert configured perimeter features into normalized fire records near watches."""
         features = await self.fetch_incident_perimeter_features()
-        candidate_locations = [
-            location
-            for location in locations
-            if location.latitude is not None and location.longitude is not None
-        ]
-        if not features or not candidate_locations:
+        candidate_coords = [c for c in (location.coordinates for location in locations) if c]
+        if not features or not candidate_coords:
             return []
 
         records: list[dict[str, Any]] = []
@@ -48,13 +44,7 @@ class ExternalIntelligenceService:
 
             latitude, longitude = reference_point
             minimum_distance = min(
-                self.haversine_distance(
-                    latitude,
-                    longitude,
-                    float(location.latitude),
-                    float(location.longitude),
-                )
-                for location in candidate_locations
+                self.haversine_distance(latitude, longitude, *coords) for coords in candidate_coords
             )
             if minimum_distance > settings.MAX_FIRE_DISTANCE_MILES:
                 continue

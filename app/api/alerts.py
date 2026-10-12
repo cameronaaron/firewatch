@@ -266,27 +266,17 @@ def _get_live_fire_snapshot(location: Location, db: Session):
     nearest_distance: float | None = None
     nearest_direction: str | None = None
 
+    coords = location.coordinates
+    if coords is None:
+        return None
     fires = db.query(Fire).filter(Fire.is_active).all()
     for fire in fires:
-        if fire.latitude is None or fire.longitude is None:
-            continue
-
-        distance = FireDataService.haversine_distance(
-            fire.latitude,
-            fire.longitude,
-            location.latitude,
-            location.longitude,
-        )
+        distance = FireDataService.haversine_distance(fire.latitude, fire.longitude, *coords)
         if distance > settings.MAX_FIRE_DISTANCE_MILES:
             continue
 
         if nearest_distance is None or distance < nearest_distance:
-            bearing = FireDataService.calculate_bearing(
-                fire.latitude,
-                fire.longitude,
-                location.latitude,
-                location.longitude,
-            )
+            bearing = FireDataService.calculate_bearing(fire.latitude, fire.longitude, *coords)
             nearest_distance = round(distance, 1)
             nearest_direction = (
                 f"{FireDataService.get_cardinal_direction(bearing)} ({int(bearing)}°)"

@@ -83,13 +83,13 @@ class FireSpreadPredictor:
         # Convert to polars DataFrame for analysis
         rows = [
             {
-                "timestamp": getattr(h, "recorded_at", h.timestamp),
+                "timestamp": h.timestamp,
                 "distance": h.distance_miles,
                 "bearing": h.bearing_degrees,
             }
             for h in sorted(
                 history,
-                key=lambda item: getattr(item, "recorded_at", item.timestamp),
+                key=lambda item: item.timestamp,
             )
         ]
         timestamps = [row["timestamp"] for row in rows]

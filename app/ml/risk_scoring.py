@@ -148,16 +148,11 @@ class RiskScorer:
         Returns:
             Trajectory risk score 0-100
         """
-        if not hasattr(fire, "latitude") or not hasattr(fire, "longitude"):
+        coords = location.coordinates
+        if coords is None or getattr(fire, "latitude", None) is None:
             return 0.0
 
-        # Calculate angle from fire to location
-        fire_to_location_bearing = self._calculate_bearing(
-            fire.latitude,
-            fire.longitude,
-            location.latitude,
-            location.longitude,
-        )
+        fire_to_location_bearing = self._calculate_bearing(fire.latitude, fire.longitude, *coords)
 
         # Bearing deviation from fire's current bearing
         current_bearing = getattr(fire, "bearing_degrees", 0) or 0

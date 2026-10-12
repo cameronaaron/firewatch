@@ -562,3 +562,18 @@ def test_main_routes_commands(monkeypatch, capsys):
 
     assert db_instances
     assert all(db.closed for db in db_instances)
+
+
+def test_seed_skips_locations_not_yet_geocoded(db):
+    _add_location(db)
+    db.add(
+        Location(location_id="pending", address="Somewhere", display_name="Pending", is_active=True)
+    )
+    db.commit()
+    _add_fire(db)
+
+    seeded = seed_synthetic_history(
+        db, pair_limit=5, points_per_pair=4, step_minutes=30, random_seed=7, replace_existing=True
+    )
+
+    assert seeded["pairs_seeded"] == 1

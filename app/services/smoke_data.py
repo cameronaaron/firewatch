@@ -60,13 +60,13 @@ class SmokeDataService:
         *,
         lookback_days: int | None = None,
         max_distance_miles: float | None = None,
-    ) -> dict[str, object] | None:
+    ) -> dict[str, Any] | None:
         """Return the strongest recent smoke plume affecting or near a location."""
         days = lookback_days or self.lookback_days
         distance_limit = max_distance_miles or self.max_distance_miles
         point = Point(float(longitude), float(latitude))
 
-        best: dict[str, object] | None = None
+        best: dict[str, Any] | None = None
         for day_offset in range(days):
             target_date = datetime.now(UTC).date() - timedelta(days=day_offset)
             for plume in self._load_plumes_for_date(target_date):
