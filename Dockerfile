@@ -1,7 +1,7 @@
 # Multi-stage build for production-ready Docker image
 
 # Stage 1: Builder
-FROM python:3.12-slim as builder
+FROM python:3.14-slim as builder
 
 # Set working directory
 WORKDIR /app
@@ -20,7 +20,7 @@ RUN pip install --user --no-cache-dir wheel && \
 
 
 # Stage 2: Runtime
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
