@@ -1,21 +1,21 @@
 # Firewatch runtime dependencies (pruned to direct usage in app/ and tests/)
 
 # Core API and config
-fastapi==0.142.2
+fastapi==0.143.0
 uvicorn[standard]==0.54.0
-pydantic==2.13.5
+pydantic==2.14.1
 pydantic-settings==2.15.0
-sqlalchemy==2.1.3
+sqlalchemy==2.1.4
 alembic==1.20.0
 httpx==0.28.1
 
 # Geospatial and AQ data handling
 geopy==2.5.0
-shapely==2.1.2
+shapely==2.2.0
 
 # ML stack
 numpy==2.4.6
-polars==1.44.2
+polars==2.0.0
 scikit-learn==1.9.1
 
 # Optional boosters for formal bakeoff command
